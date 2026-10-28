@@ -7,19 +7,42 @@ use Illuminate\Database\Eloquent\Model;
 
 class Color extends Model
 {
-    //
     use HasFactory;
-    protected $table = 'loaimau';
+
+    protected $table = 'mausac';
+
+    protected $primaryKey = 'MaMau';
+
     public $timestamps = false;
-    protected $primaryKey = 'MaLoaiMau';
+
     protected $fillable = [
-        'TenLoaiMau',
-        'HinhAnhMau',
-        'MoTa',
-        'TrangThai',
+        'TenMau',
+        'MaHex',
+        'NguoiTao',
+        'NgayTao',
+        'NguoiCapNhat',
+        'NgayCapNhat',
+        'NguoiXoa',
+        'NgayXoa',
+        'IsDeleted',
     ];
-    public function products()
+
+    protected $casts = [
+        'NgayTao' => 'datetime',
+        'NgayCapNhat' => 'datetime',
+        'NgayXoa' => 'datetime',
+        'IsDeleted' => 'boolean',
+    ];
+
+    /**
+     * Một màu sắc có thể được sử dụng trong nhiều biến thể sản phẩm.
+     */
+    public function productVariants()
     {
-        return $this->hasMany(Product::class, 'MaLoaiMau', 'MaLoaiMau');
+        return $this->hasMany(
+            ProductVariant::class,
+            'MaMau',
+            'MaMau'
+        );
     }
 }

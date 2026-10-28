@@ -8,39 +8,62 @@ use Illuminate\Support\Facades\Auth;
 
 class Cart extends Model
 {
-    //
     use HasFactory;
+
     protected $table = 'giohang';
+
+    protected $primaryKey = 'MaGioHang';
+
     public $timestamps = false;
-    protected $primaryKey = 'ID';
+
     protected $fillable = [
-        'id',
-        'MaSanPham',
         'MaTaiKhoan',
-        'MaSize',
-        'SessionID',
-        'SoLuong'
+        'MaBienThe',
+        'SoLuong',
+        'NgayThem',
     ];
-    public function sanpham()
+
+    protected $casts = [
+        'SoLuong' => 'integer',
+        'NgayThem' => 'datetime',
+    ];
+
+    /**
+     * Một mục giỏ hàng thuộc về một biến thể sản phẩm.
+     */
+    public function productVariant()
     {
-        // Đảm bảo 'MaSanPham' (hoặc id) là tên cột thực tế trong DB của bạn
-        return $this->belongsTo(Product::class, 'MaSanPham', 'MaSanPham'); 
+        return $this->belongsTo(
+            ProductVariant::class,
+            'MaBienThe',
+            'MaBienThe'
+        );
     }
+
+    /**
+     * Một mục giỏ hàng thuộc về một tài khoản.
+     */
+    public function user()
+    {
+        return $this->belongsTo(
+            User::class,
+            'MaTaiKhoan',
+            'id'
+        );
+    }
+
+    /**
+     * Lấy tổng số lượng sản phẩm trong giỏ hàng.
+     */
     public static function getCartQuantity()
     {
         if (Auth::check()) {
-            // Trường hợp 1: Đã đăng nhập -> Lấy theo MaKH
-            return self::where('MaTaiKhoan', auth()->id())->sum('SoLuong') ?? 0;
+            return self::where(
+                'MaTaiKhoan',
+                Auth::id()
+            )->sum('SoLuong');
         }
 
-        // Trường hợp 2: Chưa đăng nhập -> Lấy theo Session ID
-        // Laravel tự động tạo một ID duy nhất cho mỗi trình duyệt khách truy cập
-        $sessionId = session()->getId();
-        return self::where('SessionID', $sessionId)
-                ->whereNull('MaTaiKhoan') // Đảm bảo chỉ lấy giỏ hàng vãng lai
-                ->sum('SoLuong') ?? 0;
-    }
-    public function size(){
-        return $this->belongsTo(Size::class, 'MaSize', 'MaSize');
+        return 0;
     }
 }

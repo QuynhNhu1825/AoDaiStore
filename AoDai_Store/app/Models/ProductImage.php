@@ -9,17 +9,43 @@ class ProductImage extends Model
 {
     use HasFactory;
 
-    protected $table = 'hinhanhsanpham';
-    protected $primaryKey = 'ID';
+    protected $table = 'hinhanhsp';
+
+    protected $primaryKey = 'MaHinhAnh';
+
     public $timestamps = false;
 
     protected $fillable = [
-        'MaSanPham', 
-        'TenHinh',
-        'DuongDan'
-       
+        'MaSanPham',
+        'LinkAnh',
+        'MoTa',
+        'ThuTu',
+        'NguoiTao',
+        'NgayTao',
+        'NguoiCapNhat',
+        'NgayCapNhat',
+        'NguoiXoa',
+        'NgayXoa',
+        'IsDeleted',
     ];
-    public function sanpham() {
-        return $this->belongsTo(Product::class, 'MaSanPham', 'MaSanPham');
+
+    protected $casts = [
+        'ThuTu' => 'integer',
+        'NgayTao' => 'datetime',
+        'NgayCapNhat' => 'datetime',
+        'NgayXoa' => 'datetime',
+        'IsDeleted' => 'boolean',
+    ];
+
+    /**
+     * Một hình ảnh thuộc về một sản phẩm.
+     */
+    public function product()
+    {
+        return $this->belongsTo(
+            Product::class,
+            'MaSanPham',
+            'MaSanPham'
+        );
     }
 }
