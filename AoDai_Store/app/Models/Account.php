@@ -7,7 +7,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class Account extends Authenticatable
 {
     protected $table = 'taikhoan';
+
     protected $primaryKey = 'MaTaiKhoan';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -15,20 +17,52 @@ class Account extends Authenticatable
         'MatKhau',
         'HoTen',
         'Email',
-        'SoDienThoai',
+        'SDT',
         'DiaChi',
         'Role',
         'TrangThai',
-        'CreatedDate',
+        'NguoiTao',
+        'NgayTao',
+        'NguoiCapNhat',
+        'NgayCapNhat',
+        'NguoiXoa',
+        'NgayXoa',
+        'IsDeleted',
     ];
 
-     protected $casts = [
-        'CreatedDate' => 'datetime',
+    protected $hidden = [
+        'MatKhau',
     ];
-    
-    // Laravel mặc định dùng password → đổi sang MatKhau
+
+    protected $casts = [
+        'TrangThai' => 'boolean',
+        'IsDeleted' => 'boolean',
+        'NgayTao' => 'datetime',
+        'NgayCapNhat' => 'datetime',
+        'NgayXoa' => 'datetime',
+    ];
+
+    /**
+     * Lấy mật khẩu dùng cho quá trình xác thực của Laravel.
+     */
     public function getAuthPassword()
     {
         return $this->MatKhau;
     }
+
+    /**
+     * Tên cột chứa mật khẩu đã mã hóa.
+     */
+    public function getAuthPasswordName()
+    {
+        return 'MatKhau';
+    }
+    public function favorites()
+{
+    return $this->hasMany(
+        Favorite::class,
+        'MaTaiKhoan',
+        'MaTaiKhoan'
+    );
+}
 }

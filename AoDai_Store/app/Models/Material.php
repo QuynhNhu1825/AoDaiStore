@@ -7,19 +7,44 @@ use Illuminate\Database\Eloquent\Model;
 
 class Material extends Model
 {
-    //
     use HasFactory;
+
     protected $table = 'chatlieu';
-    public $timestamps = false;
+
     protected $primaryKey = 'MaChatLieu';
+
+    public $timestamps = false;
+
     protected $fillable = [
         'TenChatLieu',
-        'Xuatxu',
+        'XuatXu',
         'HuongDanBaoQuan',
-        'TrangThai'
+        'MoTa',
+        'NguoiTao',
+        'NgayTao',
+        'NguoiCapNhat',
+        'NgayCapNhat',
+        'NguoiXoa',
+        'NgayXoa',
+        'IsDeleted',
     ];
+
+    protected $casts = [
+        'NgayTao' => 'datetime',
+        'NgayCapNhat' => 'datetime',
+        'NgayXoa' => 'datetime',
+        'IsDeleted' => 'boolean',
+    ];
+
+    /**
+     * Một chất liệu có nhiều sản phẩm.
+     */
     public function products()
     {
-        return $this->hasMany(Product::class, 'MaChatLieu', 'MaChatLieu');
+        return $this->hasMany(
+            Product::class,
+            'MaChatLieu',
+            'MaChatLieu'
+        );
     }
 }

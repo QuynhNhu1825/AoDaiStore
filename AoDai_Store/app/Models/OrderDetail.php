@@ -2,34 +2,58 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderDetail extends Model
 {
-    //
-    protected $table = 'chitiethoadon';
-      public $incrementing = false;   
+    use HasFactory;
+
+    protected $table = 'chitietdonhang';
+
+    protected $primaryKey = 'MaChiTietDH';
+
+    public $incrementing = false;
+
+    protected $keyType = 'int';
+
     public $timestamps = false;
 
-  
-    protected $primaryKey = null;
     protected $fillable = [
-        'MaHoaDon',
-        'MaSanPham',
+        'MaChiTietDH',
+        'MaDonHang',
+        'MaBienThe',
         'SoLuong',
         'DonGia',
-        'ThanhTien'
     ];
-    public function product()
-    {
-        // Mỗi chi tiết hóa đơn thuộc về một Sản phẩm
-        return $this->belongsTo(Product::class, 'MaSanPham', 'MaSanPham');
-    }
 
+    protected $casts = [
+        'SoLuong' => 'integer',
+        'DonGia' => 'decimal:2',
+        'ThanhTien' => 'decimal:2',
+    ];
+
+    /**
+     * Chi tiết đơn hàng thuộc về một đơn hàng.
+     */
     public function order()
     {
-        // Mỗi chi tiết hóa đơn thuộc về một Hóa đơn
-        return $this->belongsTo(Order::class, 'MaHoaDon', 'MaHoaDon');
+        return $this->belongsTo(
+            Order::class,
+            'MaDonHang',
+            'MaDonHang'
+        );
     }
 
+    /**
+     * Chi tiết đơn hàng thuộc về một biến thể sản phẩm.
+     */
+    public function productVariant()
+    {
+        return $this->belongsTo(
+            ProductVariant::class,
+            'MaBienThe',
+            'MaBienThe'
+        );
+    }
 }

@@ -7,63 +7,100 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    //
     use HasFactory;
+
     protected $table = 'sanpham';
+
     protected $primaryKey = 'MaSanPham';
+
     public $timestamps = false;
+
+    protected $fillable = [
+        'MaChatLieu',
+        'TenSanPham',
+        'MoTa',
+        'HinhAnh',
+        'TrangThai',
+        'NguoiTao',
+        'NgayTao',
+        'NguoiCapNhat',
+        'NgayCapNhat',
+        'NguoiXoa',
+        'NgayXoa',
+        'IsDeleted',
+    ];
+
+    protected $casts = [
+        'TrangThai' => 'boolean',
+        'IsDeleted' => 'boolean',
+        'NgayTao' => 'datetime',
+        'NgayCapNhat' => 'datetime',
+        'NgayXoa' => 'datetime',
+    ];
+
+    /**
+     * Quan hệ với chất liệu
+     */
     public function chatlieu()
     {
-        return $this->belongsTo(Material::class, 'MaChatLieu', 'MaChatLieu');
+        return $this->belongsTo(
+            Material::class,
+            'MaChatLieu',
+            'MaChatLieu'
+        );
     }
 
-    public function loaimau()
-    {
-        return $this->belongsTo(Color::class, 'MaLoaiMau', 'MaLoaiMau');
-    }
-    public function loaisanpham()
-    {
-        return $this->belongsTo(Category::class, 'MaLoaiSP', 'MaLoaiSP');
-    }
+    /**
+     * Quan hệ với hình ảnh sản phẩm
+     */
     public function hinhanhsanpham()
     {
-        return $this->hasMany(ProductImage::class, 'MaSanPham', 'MaSanPham');
+        return $this->hasMany(
+            ProductImage::class,
+            'MaSanPham',
+            'MaSanPham'
+        );
+    }
+    public function favorites()
+    {
+        return $this->hasMany(
+            Favorite::class,
+            'MaSanPham',
+            'MaSanPham'
+        );
+    }
+    /**
+     * Quan hệ với các biến thể sản phẩm
+     */
+    public function bienThe()
+    {
+        return $this->hasMany(
+            ProductVariant::class,
+            'MaSanPham',
+            'MaSanPham'
+        );
     }
 
-    public function sizes()
-    {
-
-        return $this->belongsToMany(Size::class, 'sanpham_size', 'MaSanPham', 'MaSize')
-            ->withPivot('SoLuong');
-    }
-    public function nhacungcap()
-    {
-        return $this->belongsTo(Supplier::class, 'MaNCC', 'MaNCC');
-    }
+    /**
+     * Lấy các sản phẩm liên quan theo chất liệu
+     */
     public function getRelatedProducts($limit = 4)
     {
-        return Product::where('MaSanPham', '<>', $this->MaSanPham) // Không lấy chính nó
-            ->where(function($query) {
-                $query->where('MaLoaiSP', $this->MaLoaiSP) // Ưu tiên cùng loại
-                    ->orWhere('MaChatLieu', $this->MaChatLieu); // Hoặc cùng chất liệu
-            })
-            ->where('TrangThai', '1')
-            ->inRandomOrder() // Hiển thị ngẫu nhiên để tăng sự đa dạng
+        return self::where('MaSanPham', '<>', $this->MaSanPham)
+            ->where('MaChatLieu', $this->MaChatLieu)
+            ->where('TrangThai', 1)
+            ->where('IsDeleted', 0)
+            ->inRandomOrder()
             ->limit($limit)
             ->get();
     }
-    protected $fillable = [
-        'TenSanPham',
-        'GiaBan',
-        'MaLoaiSP',
-        'MaChatLieu',
-        'MaNCC',
-        'MaLoaiMau',
-        'MaSize',
-        'SoLuong',
-        'HinhAnh',
-        'TrangThai',
-        'CreatedDate',
-        'MoTa',
-    ];
+        public function danhMucs()
+    {
+        return $this->belongsToMany(
+            Category::class,
+            'sanpham_danhmuc',
+            'MaSanPham',
+            'MaDanhMuc'
+        );
+    }
 }
