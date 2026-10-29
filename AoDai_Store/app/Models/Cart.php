@@ -35,8 +35,8 @@ class Cart extends Model
     {
         return $this->belongsTo(
             ProductDetail::class,
-            'MaBienThe',
-            'MaBienThe'
+            'MaChiTietSP',
+            'MaChiTietSP'
         );
     }
 

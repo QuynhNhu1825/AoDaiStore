@@ -9,9 +9,9 @@ class ProductDetail extends Model
 {
     use HasFactory;
 
-    protected $table = 'bienthesp';
+    protected $table = 'chitietsanpham';
 
-    protected $primaryKey = 'MaBienThe';
+    protected $primaryKey = 'MaChiTietSP';
 
     public $timestamps = false;
 
@@ -40,14 +40,38 @@ class ProductDetail extends Model
     ];
 
     /**
-     * Quan hệ với bảng sản phẩm.
+     * Chi tiết sản phẩm thuộc một sản phẩm.
      */
-    public function sanPham()
+    public function product()
     {
         return $this->belongsTo(
             Product::class,
             'MaSanPham',
             'MaSanPham'
+        );
+    }
+
+    /**
+     * Chi tiết sản phẩm có một màu sắc.
+     */
+    public function color()
+    {
+        return $this->belongsTo(
+            Color::class,
+            'MaMau',
+            'MaMau'
+        );
+    }
+
+    /**
+     * Chi tiết sản phẩm có một size.
+     */
+    public function size()
+    {
+        return $this->belongsTo(
+            Size::class,
+            'MaSize',
+            'MaSize'
         );
     }
 }

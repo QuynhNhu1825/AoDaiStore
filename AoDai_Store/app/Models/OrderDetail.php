@@ -51,9 +51,9 @@ class OrderDetail extends Model
     public function productVariant()
     {
         return $this->belongsTo(
-            ProductVariant::class,
-            'MaBienThe',
-            'MaBienThe'
+            ProductDetail::class,
+            'MaChiTietSP',
+            'MaChiTietSP'
         );
     }
 }

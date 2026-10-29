@@ -252,13 +252,15 @@
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                @foreach($data['categories']->take(4) as $cat)
-                    <a href="{{ route('category.show', $cat->MaLoaiSP) }}"
-                    class="relative h-48 group overflow-hidden rounded-xl shadow-md bg-stone-400 flex items-center justify-center">
-                        <div class="absolute inset-0 bg-stone-900/40 group-hover:bg-red-900/60 transition-colors duration-500"></div>
-                        <span class="relative text-white font-bold uppercase tracking-[0.15em] text-sm px-4 text-center">
-                            {{ $cat->TenLoaiSP }}
-                        </span>
+               @foreach($data['categories']->take(4) as $cat)
+                    <a href="{{ route('category.show', ['id' => $cat->MaDanhMuc]) }}">
+                        <div class="relative h-48 group overflow-hidden rounded-xl shadow-md bg-stone-400 flex items-center justify-center">
+                            <div class="absolute inset-0 bg-stone-900/40 group-hover:bg-red-900/60 transition-colors duration-500"></div>
+
+                            <span class="relative text-white font-bold uppercase tracking-[0.15em] text-sm px-4 text-center">
+                                {{ $cat->TenDanhMuc }}
+                            </span>
+                        </div>
                     </a>
                 @endforeach
             </div>
