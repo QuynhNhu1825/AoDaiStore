@@ -24,8 +24,7 @@ class AdminDashboardController extends Controller
         $totalOrders     = Order::count();
         $totalProducts   = Product::count();
         $totalCategories = Category::count();
-        $totalSuppliers  = Supplier::count();
-        $totalPromotions = Promotion::count();
+        
 
         return view('admin.dashboard', compact(
             'totalAccounts',

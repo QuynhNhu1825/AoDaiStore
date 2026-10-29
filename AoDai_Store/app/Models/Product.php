@@ -70,9 +70,9 @@ class Product extends Model
         );
     }
     /**
-     * Quan hệ với các biến thể sản phẩm
+     * Quan hệ với các chi tiết sản phẩm
      */
-    public function bienThe()
+    public function chiTietSanPham()
     {
         return $this->hasMany(
             ProductDetail::class,
