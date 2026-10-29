@@ -27,8 +27,8 @@
                 </div>
             </div>
 
-            <a href="{{ route('contact.index') }}" class="hover:text-red-700 transition">Liên hệ</a>
-            <a href="{{ route('gioithieu') }}" class="hover:text-red-700 transition">Giới thiệu</a>
+           
+            <a href="{{ url('/gioithieu') }}" class="hover:text-red-700 transition">Giới thiệu</a>
         </div>
 
         <div class="flex items-center space-x-6">

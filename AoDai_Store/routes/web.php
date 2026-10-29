@@ -3,7 +3,6 @@
 use App\Http\Controllers\AdminAccountController;
 
 use App\Http\Controllers\AdminOrder;
-use App\Http\Controllers\Adminpromotion;
 use App\Http\Controllers\AdminSizeController;
 
 use App\Http\Controllers\VNPAYController;
@@ -11,20 +10,14 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\AdminCategoryController;
-use App\Http\Controllers\AdminSupplierController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AdminMaterialController;
 use App\Http\Controllers\AdminColorController;
-use App\Http\Controllers\AdminContactController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\AdminInfoWebController;
 use App\Http\Controllers\StatisticsController;
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\AdminPostController;
 
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\OrderController;
@@ -35,8 +28,6 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/admin', [AdminDashboardController::class, 'index'])->name('admin.dashboard')->middleware(['auth']);
-Route::post('/admin/dashboard', [AdminInfoWebController::class, 'update'])->name('admin.dashboard.update');
-//register
 Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 //material
@@ -58,11 +49,7 @@ Route::get('/admin/accounts', [AdminAccountController::class, 'index'])->name('a
 Route::get('/admin/accounts/edit/{MaTaiKhoan}', [AdminAccountController::class, 'edit'])->name('admin.accounts.edit');
 Route::post('/admin/accounts/update/{MaTaiKhoan}', [AdminAccountController::class, 'update'])->name('admin.accounts.update');
 Route::post('/admin/accounts/lock/{MaTaiKhoan}', [AdminAccountController::class, 'lock'])->name('admin.accounts.lock');
-//contact admin
-Route::get('/admin/contacts', [AdminContactController::class, 'index'])->name('admin.contacts.index');
-Route::get('/admin/contacts/{MaLienHe}/edit', [AdminContactController::class, 'edit'])->name('admin.contacts.edit');
-Route::put('/admin/contacts/{MaLienHe}', [AdminContactController::class, 'update'])->name('admin.contacts.update');
-Route::delete('/admin/contacts/{MaLienHe}', [AdminContactController::class, 'destroy'])->name('admin.contacts.destroy');
+
 //product client
 Route::get('/', [ProductController::class, 'index'])->name('home');
 Route::get('/products', [ProductController::class, 'productList'])->name('products.index');
@@ -104,12 +91,7 @@ Route::put('/admin/sizes/update/{MaSize}', [AdminSizeController::class, 'update'
 Route::delete('/admin/sizes/delete/{MaSize}', [AdminSizeController::class, 'destroy'])->name('admin.sizes.destroy');
 Route::post('/admin/sizes/toggle-status/{MaSize}', [AdminSizeController::class, 'toggleStatus'])->name('admin.sizes.toggleStatus');
 
-//promotion
-Route::resource('/admin/promotions', App\Http\Controllers\Adminpromotion::class)->names('promotions');
-Route::patch('/admin/promotions/{id}/restore',
-    [Adminpromotion::class, 'restore']
-)->name('promotions.restore');
-//order
+
 Route::resource('/admin/orders', App\Http\Controllers\AdminOrder::class)->names('orders');
 Route::post('/admin/orders/status/{id}', [AdminOrder::class, 'confirmstatus'])->name('orders.confirmstatus');
 
@@ -119,43 +101,15 @@ Route::resource(('/order'), App\Http\Controllers\OrderController::class)->names(
 //vnpay
 Route::post('/vnpay-payment', [VNPAYController::class, 'createPayment'])->name('vnpay.pay');
 Route::get('/vnpay-return', [VNPAYController::class, 'vnpayReturn']); // Nhận kết quả
-//suppliers
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::resource('suppliers', AdminSupplierController::class);
-
-});
 
 
-//contact
-Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
-Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+
+
 //profile
 Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 //statistics
 Route::get('/admin/statistics', [StatisticsController::class, 'index'])
     ->name('statistics.index');
-// post-client
-Route::get('/gioi-thieu', [PostController::class, 'gioiThieu'])->name('gioithieu');
-Route::get('/blog', [PostController::class, 'index'])->name('blog.index');
-Route::get('/blog/{slug}', [PostController::class, 'show'])->name('blog.show');
-// post-admin
-Route::get('/admin/bai-viet', [AdminPostController::class, 'index'])
-    ->name('admin.baiviet.index');
-
-Route::get('/admin/bai-viet/create', [AdminPostController::class, 'create'])
-    ->name('admin.baiviet.create');
-
-Route::post('/admin/bai-viet', [AdminPostController::class, 'store'])
-    ->name('admin.baiviet.store');
-
-Route::get('/admin/bai-viet/{id}/edit', [AdminPostController::class, 'edit'])
-    ->name('admin.baiviet.edit');
-
-Route::put('/admin/bai-viet/{id}', [AdminPostController::class, 'update'])
-    ->name('admin.baiviet.update');
-
-Route::delete('/admin/bai-viet/{id}', [AdminPostController::class, 'destroy'])
-    ->name('admin.baiviet.destroy');
 //profile
 Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 //favorite
@@ -190,4 +144,6 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 Route::get('/san-pham-da-mua', 
     [OrderController::class, 'purchasedProducts']
 )->name('orders.reviews');
-
+//gioithieu
+Route::view('/gioithieu', 'client.gioithieu')
+    ->name('gioithieu');
