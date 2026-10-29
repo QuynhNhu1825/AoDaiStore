@@ -40,7 +40,7 @@ class Color extends Model
     public function productVariants()
     {
         return $this->hasMany(
-            ProductVariant::class,
+           ProductDetail::class,
             'MaMau',
             'MaMau'
         );

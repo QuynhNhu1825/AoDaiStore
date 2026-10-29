@@ -75,7 +75,7 @@ class Product extends Model
     public function bienThe()
     {
         return $this->hasMany(
-            ProductVariant::class,
+            ProductDetail::class,
             'MaSanPham',
             'MaSanPham'
         );
