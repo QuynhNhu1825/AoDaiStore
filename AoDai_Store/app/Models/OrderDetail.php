@@ -22,7 +22,7 @@ class OrderDetail extends Model
     protected $fillable = [
         'MaChiTietDH',
         'MaDonHang',
-        'MaBienThe',
+        'MaChiTietSP',
         'SoLuong',
         'DonGia',
     ];

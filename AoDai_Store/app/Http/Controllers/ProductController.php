@@ -145,7 +145,23 @@ class ProductController extends Controller
         )
         ->where('TrangThai', 1)
         ->avg('SoSao');
-
+        // Tổng số lượng sản phẩm đã giao thành công
+    $luotBan = DB::table('chitietdonhang')
+    ->join(
+        'donhang',
+        'chitietdonhang.MaDonHang',
+        '=',
+        'donhang.MaDonHang'
+    )
+    ->join(
+        'chitietsanpham',
+        'chitietdonhang.MaChiTietSP',
+        '=',
+        'chitietsanpham.MaChiTietSP'
+    )
+    ->where('chitietsanpham.MaSanPham', $product->MaSanPham)
+    ->where('donhang.TrangThai', 'DaGiao')
+    ->sum('chitietdonhang.SoLuong');
         // Danh sách đánh giá kèm tên tài khoản
         $dsDanhGia = DB::table('danhgia')
             ->join(
@@ -256,6 +272,7 @@ class ProductController extends Controller
             'avgRating',
             'dsDanhGia',
             'daMua',
+            'luotBan',
             'soLuotThich',
             'isFavorite',
             'relatedProducts'
