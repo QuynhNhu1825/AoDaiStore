@@ -69,18 +69,26 @@
                 </form>
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-4">
-                        <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
-                            <img src="{{ asset('img/logo/Facebook-logo.png') }}" alt="Facebook" class="w-15 h-10 object-contain">
-                        </a>
 
-                        <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
-                            <img src="{{ asset('img/logo/ins.png') }}" alt="Instagram" class="w-8 h-8 object-contain">
-                        </a>
+                <div class="flex items-center gap-4 mt-6">
+                    <a href="https://www.facebook.com/"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="Facebook"
+                       class="hover:opacity-80 transition-opacity">
+                        <img src="{{ asset('img/logo/Facebook-logo.png') }}"
+                        alt="Facebook"
+                        class="w-12 h-12 object-contain">
 
-                        <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
-                            <img src="{{ asset('img/logo/tiktok2.png') }}" alt="TikTok" class="w-8 h-8 object-contain">
-                        </a>
-                    </div>
+                    <a href="https://www.instagram.com/"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="Instagram"
+                       class="hover:opacity-80 transition-opacity">
+                        <img src="{{ asset('img/logo/ins.png') }}"
+                             alt="Instagram"
+                             class="w-8 h-8 object-contain">
+                    </a>
                 </div>
 
             </div>

@@ -17,11 +17,28 @@ class Cart extends Model
         'id',
         'MaSanPham',
         'MaTaiKhoan',
+<<<<<<< Updated upstream
         'MaSize',
         'SessionID',
         'SoLuong'
     ];
     public function sanpham()
+=======
+        'MaChiTietSP',
+        'SoLuong',
+        'NgayThem',
+    ];
+
+    protected $casts = [
+        'SoLuong' => 'integer',
+        'NgayThem' => 'datetime',
+    ];
+
+    /**
+     * Một mục giỏ hàng thuộc về một chi tiết sản phẩm.
+     */
+    public function productDetail()
+>>>>>>> Stashed changes
     {
         // Đảm bảo 'MaSanPham' (hoặc id) là tên cột thực tế trong DB của bạn
         return $this->belongsTo(Product::class, 'MaSanPham', 'MaSanPham'); 

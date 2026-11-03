@@ -3,173 +3,276 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\Product;
-use App\Models\Promotion;
-use App\Models\User;
+use App\Models\ProductDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Psy\Readline\Hoa\Console;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
-    //
+    /**
+     * Thêm sản phẩm vào giỏ hàng thành viên.
+     * Khách vãng lai sử dụng Local Storage ở frontend.
+     */
+    public function addToCart(Request $request, $id)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng sử dụng Local Storage cho giỏ hàng khách vãng lai.'
+            ], 401);
+        }
 
+        $request->validate([
+            'SoLuong' => 'nullable|integer|min:1',
+        ]);
 
-public function addToCart(Request $request, $id)
-{
-    $quantity = $request->input('SoLuong', 1);
-    $size = $request->input('MaSize', null); // Lấy kích thước nếu có
-    if (Auth::check()) {
-        // Người dùng đã đăng nhập
-        $cartItem = Cart::where('MaSanPham', $id)
-            ->where('MaTaiKhoan', Auth::id())
-                ->where('MaSize', $size)
+        $quantity = (int) $request->input('SoLuong', 1);
+
+        $productDetail = ProductDetail::where('MaChiTietSP', $id)->first();
+
+        if (!$productDetail) {
+            return back()->with('error', 'Chi tiết sản phẩm không tồn tại!');
+        }
+
+        $cartItem = Cart::where('MaTaiKhoan', Auth::id())
+            ->where('MaChiTietSP', $id)
             ->first();
+
         if ($cartItem) {
-            // Cập nhật số lượng nếu sản phẩm đã có trong giỏ hàng
             $cartItem->SoLuong += $quantity;
             $cartItem->save();
         } else {
-            // Thêm sản phẩm mới vào giỏ hàng
             Cart::create([
-                'MaSanPham' => $id,
-                'MaSize' => $size,
                 'MaTaiKhoan' => Auth::id(),
+                'MaChiTietSP' => $id,
                 'SoLuong' => $quantity,
+                'NgayThem' => now(),
             ]);
         }
-    } else {
-        // Người dùng chưa đăng nhập, sử dụng SessionID
-        $sessionId = session()->getId();
-        $cartItem = Cart::where('MaSanPham', $id)
-            ->where('SessionID', $sessionId)
-                ->where('MaSize', $size)
-            ->first();
-        
 
-        if ($cartItem) {
-            // Cập nhật số lượng nếu sản phẩm đã có trong giỏ hàng
-            $cartItem->increment('SoLuong', $quantity);
-
-
-            // dd($cartItem);
-        } else {
-            // Thêm sản phẩm mới vào giỏ hàng
-            Cart::create([
-                'MaSanPham' => $id,
-                'MaSize' => $size,
-                'SessionID' => $sessionId,
-                'SoLuong' => $quantity,
-            ]);
-        }
+        return back()->with('success', 'Sản phẩm đã được thêm vào giỏ hàng!');
     }
-    return redirect()->back()->with('success', 'Sản phẩm đã được thêm vào giỏ hàng!');
-}
 
-   public function updateQuantity(Request $request)
-{
-    if(Auth::check()){
-        $item = Cart::where('MaSanPham', $request->id)
+    /**
+     * Đồng bộ giỏ hàng Local Storage vào database sau đăng nhập.
+     */
+    public function mergeCartAfterLogin(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn chưa đăng nhập!'
+            ], 401);
+        }
+
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.MaChiTietSP' => 'required|integer',
+            'items.*.SoLuong' => 'required|integer|min:1',
+        ]);
+
+        DB::transaction(function () use ($request) {
+
+            foreach ($request->items as $item) {
+
+                $detailId = $item['MaChiTietSP'];
+                $quantity = $item['SoLuong'];
+
+                // Kiểm tra biến thể sản phẩm tồn tại
+                $productDetail= ProductDetail::where(
+                    'MaChiTietSP',
+                    $detailId
+                )->first();
+
+                if (!$productDetail) {
+                    continue;
+                }
+
+                // Kiểm tra sản phẩm đã có trong giỏ hàng tài khoản
+                $existing = Cart::where('MaTaiKhoan', Auth::id())
+                    ->where('MaChiTietSP', $detailId)
+                    ->first();
+
+                if ($existing) {
+
+                    // Đã tồn tại thì cộng số lượng
+                    $existing->SoLuong += $quantity;
+                    $existing->save();
+
+                } else {
+
+                    // Chưa tồn tại thì thêm mới
+                    Cart::create([
+                        'MaTaiKhoan' => Auth::id(),
+                        'MaChiTietSP' => $detailId,
+                        'SoLuong' => $quantity,
+                        'NgayThem' => now(),
+                    ]);
+                }
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đồng bộ giỏ hàng thành công!'
+        ]);
+    }
+
+    /**
+     * Cập nhật số lượng sản phẩm trong giỏ hàng thành viên.
+     */
+    public function updateQuantity(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng đăng nhập!'
+            ], 401);
+        }
+
+        $request->validate([
+            'id' => 'required|integer',
+            'type' => 'required|in:increase,decrease',
+        ]);
+
+        $item = Cart::where('MaGioHang', $request->id)
             ->where('MaTaiKhoan', Auth::id())
             ->first();
-    }
-    else{
-        $sessionId=session()->getId();
-        $item = Cart::where('MaSanPham', $request->id)
-            ->where('SessionID', $sessionId)
-            ->first();
-    }
-    if (!$item) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Không tìm thấy sản phẩm trong giỏ hàng'
-        ], 404);
-    }
-    if ($request->type == 'increase') {
-        $item->SoLuong += 1;
-    } else {
-        if ($item->SoLuong > 1) {
-            $item->SoLuong -= 1;
+
+        if (!$item) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy sản phẩm trong giỏ hàng!'
+            ], 404);
         }
-    }
-    
-    $item->save();
 
-    return response()->json([
-        'success' => true,
-        'new_qty' => $item->SoLuong
-    ]);
-}
-
-    public function mergeCartAfterLogin($sessionId)
-{
-    
-    $userId = Auth::id();
-
-    $guestItems = Cart::where('SessionID', $sessionId)->get();
-
-    foreach ($guestItems as $item) {
-        $existing = Cart::where('MaTaiKhoan', $userId)
-            ->where('MaSanPham', $item->MaSanPham)
-            ->where('MaSize', $item->MaSize)
-            ->first();
-
-        if ($existing) {
-            $existing->SoLuong += $item->SoLuong;
-            $existing->save();
-
-            $item->delete();
+        if ($request->type === 'increase') {
+            $item->SoLuong += 1;
         } else {
-            $item->MaTaiKhoan = $userId;
-            $item->SessionID = null;
-            $item->save();
+            if ($item->SoLuong > 1) {
+                $item->SoLuong -= 1;
+            }
         }
+
+        $item->save();
+
+        return response()->json([
+            'success' => true,
+            'new_qty' => $item->SoLuong,
+        ]);
     }
+
+    /**
+     * Xóa một sản phẩm khỏi giỏ hàng thành viên.
+     */
+    public function removeFromCart($id)
+    {
+        if (!Auth::check()) {
+            return back()->with('error', 'Vui lòng đăng nhập!');
+        }
+
+        Cart::where('MaGioHang', $id)
+            ->where('MaTaiKhoan', Auth::id())
+            ->delete();
+
+        return back()->with('success', 'Đã xóa sản phẩm khỏi giỏ hàng!');
+    }
+
+    /**
+     * Xóa toàn bộ giỏ hàng thành viên.
+     */
+    public function clearCart()
+    {
+        if (!Auth::check()) {
+            return back()->with('error', 'Vui lòng đăng nhập!');
+        }
+
+        Cart::where('MaTaiKhoan', Auth::id())->delete();
+
+        return back()->with('success', 'Giỏ hàng đã được làm trống!');
+    }
+
+    /**
+     * Hiển thị giỏ hàng.
+     * Thành viên: lấy từ database.
+     * Khách vãng lai: frontend đọc Local Storage.
+     */
+    public function viewCart()
+{
+    if (Auth::check()) {
+        $cartItems = Cart::with([
+            'productDetail.product.chatlieu',
+            'productDetail.product.hinhanhsanpham',
+            'productDetail.color',
+            'productDetail.size',
+        ])
+        ->where('MaTaiKhoan', Auth::id())
+        ->paginate(10);
+
+        $totalPrice = $cartItems->sum(function ($item) {
+            return $item->productDetail->product->GiaBan * $item->SoLuong;
+        });
+
+    } else {
+        $cartItems = collect();
+        $totalPrice = 0;
+    }
+
+    return view('client.cart.index', compact(
+        'cartItems',
+        'totalPrice'
+    ));
 }
 
+    /**
+     * Checkout dành cho thành viên.
+     */
     public function checkout()
     {
-   
-        
-    if(Auth::check()){
-        
-        
-        // Xóa các mục giỏ hàng từ session sau khi chuyển sang tài khoản
-        Cart::where('SessionID', session()->getId())->delete();
-        $cartItems = Cart::with('sanpham','size')
-            ->where('MaTaiKhoan', Auth::id())->get();
-        $promotions = Promotion::where('TrangThai', 1)
-            ->where('NgayBatDau', '<=', now())
-            ->where('NgayKetThuc', '>=', now())
-            ->where('Soluong', '>', 0)
+        if (!Auth::check()) {
+            return redirect()->route('login')
+                ->with('error', 'Vui lòng đăng nhập để thanh toán!');
+        }
+
+        $cartItems = Cart::with('productDetail')
+            ->where('MaTaiKhoan', Auth::id())
             ->get();
-        
-    } 
 
-    $totalPrice = $cartItems->sum(function($item) {
-        return $item->sanpham ? ($item->sanpham->GiaBan * $item->SoLuong) : 0;
-    });
+        if ($cartItems->isEmpty()) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Giỏ hàng của bạn đang trống!');
+        }
 
-    // Xử lý tách địa chỉ
-    $addressData = [
-        'soNha' => '',
-        'phuongXa' => '',
-        'quanHuyen' => '',
-        'tinhThanh' => ''
-    ];
-    $info = User::where('MaTaiKhoan',Auth::id())->first();
-    if ($info && $info->DiaChi) {
-        // Giả sử lưu dạng: "Số 123 Lê Lợi, Phường Hải Châu I, Quận Hải Châu, Đà Nẵng"
-        $parts = explode(', ', $info->DiaChi);
-        $addressData['soNha'] = $parts[0] ?? '';
-        $addressData['phuongXa'] = $parts[1] ?? '';
-        $addressData['quanHuyen'] = $parts[2] ?? '';
-        $addressData['tinhThanh'] = $parts[3] ?? '';
+        // Thông tin tài khoản đăng nhập
+        $info = Auth::user();
+
+        $addressData = [
+            'soNha' => '',
+            'phuongXa' => '',
+            'quanHuyen' => '',
+            'tinhThanh' => '',
+        ];
+
+        if ($info && $info->DiaChi) {
+            $parts = explode(', ', $info->DiaChi);
+
+            $addressData['soNha'] = $parts[0] ?? '';
+            $addressData['phuongXa'] = $parts[1] ?? '';
+            $addressData['quanHuyen'] = $parts[2] ?? '';
+            $addressData['tinhThanh'] = $parts[3] ?? '';
+        }
+
+        return view('client.checkout.index', compact(
+            'cartItems',
+            'info',
+            'addressData',
+        ));
     }
 
-    return view('client.checkout.index', compact('cartItems', 'totalPrice', 'info', 'addressData', 'promotions'));
-    }
-
+    /**
+     * Trang checkout thành công.
+     */
     public function checkoutSuccess(Request $request)
     {
         $request->validate([
@@ -180,50 +283,5 @@ public function addToCart(Request $request, $id)
         ]);
 
         return view('client.checkout.success');
-    }
-    public function clearCart(){
-        if(Auth::check()){
-            Cart::where('MaTaiKhoan',Auth::id())->delete();
-        }
-        else{
-            $sessionId=session()->getId();
-            Cart::where('SessionID',$sessionId)->delete();
-        }
-        return redirect()->back()->with('success', 'Giỏ hàng đã được làm trống!');
-    }
-    public function removeFromCart($id,Request $request){
-        $request->input('size_id');
-        if(Auth::check()){
-            Cart::where('MaSanpham',$id)
-                ->where('MaTaiKhoan',Auth::id())
-                    ->where('MaSize',$request->input('size_id'))
-                ->delete();
-        }
-        else{
-            $sessionId=session()->getId();
-            Cart::where('MaSanPham',$id)
-                ->where('SessionID',$sessionId)
-                    ->where('MaSize',$request->input('size_id'))
-                ->delete();
-        }
-        return redirect()->back()->with('success', 'Sản phẩm đã được xóa khỏi giỏ hàng!');
-    }
-    public function viewCart()
-    {
-        // Fetch cart items from database or session
-        if(Auth::check()){
-
-            $cartItems = Cart::with('sanpham','size')
-            ->where('MaTaiKhoan', Auth::id())->paginate(5);
-        }
-        else{
-            $sessionId=session()->getId();
-            $cartItems=Cart::with('sanpham','size')->where('SessionID', $sessionId)->paginate(5);
-        }
-        $totalPrice = $cartItems->sum(function($item) {
-        // Kiểm tra nếu sản phẩm tồn tại để tránh lỗi null
-        return $item->sanpham ? ($item->sanpham->GiaBan * $item->SoLuong) : 0;
-    });
-        return view('client.cart.index', compact('cartItems', 'totalPrice'));
     }
 }

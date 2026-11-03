@@ -74,6 +74,8 @@ Route::get('/cart',[CartController::class,'viewCart'])->name('cart.index');
 Route::post('/update-quantity', [CartController::class, 'updateQuantity'])->name('update.quantity');
 Route::get('/category/{id}', [ProductController::class, 'showByCategory'])->name('category.show');
 Route::get('/products/category', [ProductController::class, 'category']) ->name('products.category');
+Route::post('/cart/merge', [CartController::class, 'mergeCartAfterLogin'])
+    ->name('cart.merge');
 // Quản lý áo dài (sản phẩm)
 Route::get('/admin/products', [AdminProductController::class, 'index'])->name('admin.products.index');
 Route::get('/admin/products/create', [AdminProductController::class, 'create'])->name('admin.products.create');
@@ -125,15 +127,28 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 });
 
+<<<<<<< Updated upstream
 
 //contact
 Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+=======
+>>>>>>> Stashed changes
 //profile
-Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'index'])
+        ->name('profile.index');
+
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::put('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+});
 //statistics
 Route::get('/admin/statistics', [StatisticsController::class, 'index'])
     ->name('statistics.index');
+<<<<<<< Updated upstream
 // post-client
 Route::get('/gioi-thieu', [PostController::class, 'gioiThieu'])->name('gioithieu');
 Route::get('/blog', [PostController::class, 'index'])->name('blog.index');
@@ -158,6 +173,9 @@ Route::delete('/admin/bai-viet/{id}', [AdminPostController::class, 'destroy'])
     ->name('admin.baiviet.destroy');
 //profile
 Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+=======
+
+>>>>>>> Stashed changes
 //favorite
 Route::post('/favorite/toggle/{id}', [FavoriteController::class, 'toggle'])
     ->name('favorite.toggle')

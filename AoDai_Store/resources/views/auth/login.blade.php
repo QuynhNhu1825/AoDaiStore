@@ -71,16 +71,6 @@
                     </button>
                 </div>
 
-
-
-            <div class="flex items-center justify-between text-sm">
-                <label class="flex items-center gap-2 text-gray-500">
-                    <input type="checkbox" name="remember">
-                    Ghi nhớ
-                </label>
-                <a href="#" class="font-semibold text-red-900">Quên mật khẩu?</a>
-            </div>
-
             <button type="submit"
                     class="w-full h-12 bg-red-900 text-white rounded-xl font-bold hover:bg-red-800 transition">
                 ĐĂNG NHẬP
