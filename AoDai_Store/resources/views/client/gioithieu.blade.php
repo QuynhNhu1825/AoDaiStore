@@ -42,9 +42,17 @@
             </div>
 
             <div class="bg-stone-200 rounded-lg p-10 text-center">
-                <h3 class="text-2xl font-serif text-stone-900 mb-4">
-                    Giá trị cốt lõi
-                </h3>
+                <h3 class="text-2xl text-stone-900 mb-4"
+    style="font-family: Arial !important;
+           font-size: 24px !important;
+           letter-spacing: 0 !important;
+           word-spacing: normal !important;
+           text-transform: none !important;
+           font-style: normal !important;
+           font-weight: 400 !important;
+           transform: none !important;">
+    Giá trị cốt lõi
+</h3>
 
                 <div class="space-y-4 text-stone-700">
                     <p>✨ Tôn vinh vẻ đẹp truyền thống</p>
